@@ -8,6 +8,8 @@
   "dependencies": {
     "whatsapp-web.js": "^1.21.1",
     "sqlite3": "^5.1.2",
-    "puppeteer-core": "^21.3.8"
+    "puppeteer-core": "^21.3.8",
+    "qrcode-terminal": "^0.12.0"
+
   }
 }

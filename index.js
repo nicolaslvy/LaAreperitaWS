@@ -3,6 +3,7 @@ const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer-core');
+const qrcode = require('qrcode-terminal');
 
 // 👇 Usa tu token personal de Browserless aquí
 const BROWSERLESS_TOKEN = 'SBu0KSMcQVijvb1e8848f2011f632b76e4c796a89e';
@@ -57,10 +58,15 @@ const client = new Client({
     }
 });
 
-client.on('qr', qr => {
+client.on('qr', (qr) => {
     console.log('📲 Escanea este QR con WhatsApp Business:');
-    console.log(qr);
+    qrcode.generate(qr, { small: true });
 });
+
+// client.on('qr', qr => {
+//     console.log('📲 Escanea este QR con WhatsApp Business:');
+//     console.log(qr);
+// });
 
 client.on('ready', () => {
     console.log('🤖 La Areperita Bot está listo!');
