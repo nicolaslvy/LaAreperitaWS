@@ -72,6 +72,12 @@ client.on('ready', () => {
     console.log('🤖 La Areperita Bot está listo!');
 });
 
+
+client.on('disconnected', (reason) => {
+    console.log('❌ Cliente desconectado:', reason);
+});
+
+
 client.on('message', msg => {
     const input = msg.body.trim().toLowerCase();
     db.get('SELECT respuesta FROM respuestas WHERE mensaje = ?', [input], (err, row) => {
