@@ -60,7 +60,7 @@ const client = new Client({
 
 client.on('qr', (qr) => {
     console.log('📲 Escanea este QR con WhatsApp Business:');
-    qrcode.generate(qr, { small: true });
+    qrcode.generate(qr, { small: false });
 });
 
 // client.on('qr', qr => {
