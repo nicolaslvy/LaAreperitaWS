@@ -1,13 +1,15 @@
-const { Client, LocalAuth } = require('whatsapp-web.js');
+const { Client, LocalAuth, RemoteAuth } = require('whatsapp-web.js');
 const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
 const path = require('path');
+const puppeteer = require('puppeteer-core');
 
-// Definimos las rutas de base de datos
+// 👇 Usa tu token personal de Browserless aquí
+const BROWSERLESS_TOKEN = 'SBu0KSMcQVijvb1e8848f2011f632b76e4c796a89e';
+
 const dbDir = path.join(__dirname, 'data');
 const dbFile = path.join(dbDir, 'database.sqlite');
 
-// Asegura que la carpeta exista
 if (!fs.existsSync(dbDir)) {
     try {
         fs.mkdirSync(dbDir, { recursive: true });
@@ -18,15 +20,12 @@ if (!fs.existsSync(dbDir)) {
     }
 }
 
-// Inicializa la base de datos
 const db = new sqlite3.Database(dbFile, (err) => {
     if (err) {
         console.error('❌ No se pudo abrir la base de datos:', err.message);
         process.exit(1);
     } else {
         console.log('✅ Base de datos conectada:', dbFile);
-
-        // Crea tabla si no existe
         db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='respuestas'", (err, row) => {
             if (err) {
                 console.error('❌ Error verificando tabla:', err.message);
@@ -42,45 +41,19 @@ const db = new sqlite3.Database(dbFile, (err) => {
                         console.error('❌ Error creando la tabla:', err.message);
                     } else {
                         console.log('🗂️ Tabla "respuestas" creada.');
-                        insertarRespuestasIniciales();
                     }
                 });
             } else {
                 console.log('📂 Tabla "respuestas" ya existe.');
-                insertarRespuestasIniciales();
             }
         });
     }
 });
 
-// Inserta respuestas predeterminadas si no existen
-function insertarRespuestasIniciales() {
-    db.get("SELECT COUNT(*) AS count FROM respuestas", (err, result) => {
-        if (err) {
-            console.error('❌ Error contando respuestas:', err.message);
-        } else if (result.count === 0) {
-            const insert = db.prepare("INSERT INTO respuestas (mensaje, respuesta) VALUES (?, ?)");
-
-            insert.run('hola', '¡Hola! Bienvenido a *La Areperita* 🌽. ¿Te gustaría conocer nuestras deliciosas arepas de peto 100% naturales? Escribe "menú" para ver nuestras opciones.');
-            insert.run('menú', 'Aquí está nuestro menú 📝:\n\n🥇 Arepas de peto clásica\n🧀 Arepas rellenas de queso\n\nEscribe "ordenar" para comenzar tu pedido.');
-            insert.run('ordenar', '¡Excelente! 🛒 Para hacer tu pedido, por favor indícanos qué tipo de arepa deseas y cuántas unidades.');
-            insert.run('gracias', 'Gracias por elegir *La Areperita*. ¡Esperamos que disfrutes nuestras arepas! 🌽');
-
-            insert.finalize(() => {
-                console.log('✅ Respuestas predeterminadas insertadas.');
-            });
-        } else {
-            console.log(`📌 Se encontraron ${result.count} respuestas existentes.`);
-        }
-    });
-}
-
-// Inicializa el cliente de WhatsApp
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-        headless: true,
-        args: ['--no-sandbox']
+        browserWSEndpoint: `wss://chrome.browserless.io?token=${BROWSERLESS_TOKEN}`,
     }
 });
 
@@ -95,7 +68,6 @@ client.on('ready', () => {
 
 client.on('message', msg => {
     const input = msg.body.trim().toLowerCase();
-
     db.get('SELECT respuesta FROM respuestas WHERE mensaje = ?', [input], (err, row) => {
         if (err) {
             console.error('❌ Error consultando respuesta:', err.message);
