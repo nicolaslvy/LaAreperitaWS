@@ -59,8 +59,15 @@ const client = new Client({
 });
 
 client.on('qr', (qr) => {
-    console.log('📲 Escanea este QR con WhatsApp Business:');
-    qrcode.generate(qr, { small: false });
+    // Generar el código QR para escanearlo solo la primera vez
+    console.log('Escanea este código QR para iniciar sesión en WhatsApp Web:');
+    qrcode.toString(qr, { type: 'terminal' }, (err, url) => {
+        if (err) {
+            console.error('Error generando el QR:', err);
+            return;
+        }
+        console.log(url); // Aquí se muestra el QR en la consola
+    });
 });
 
 // client.on('qr', qr => {
