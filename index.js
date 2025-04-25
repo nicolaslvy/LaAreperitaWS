@@ -28,6 +28,10 @@ if (!fs.existsSync(dbDir)) {
     }
 }
 
+// Directorio donde se guardará el archivo QR
+const qrPath = path.join(dbDir, 'qr-image.png');
+
+
 const db = new sqlite3.Database(dbFile, (err) => {
     if (err) {
         console.error('❌ No se pudo abrir la base de datos:', err.message);
@@ -73,7 +77,7 @@ client.on('qr', (qr) => {
     const qrImagePath = path.join(__dirname, 'qr-image.png');
 
     // Generamos el QR como imagen PNG
-    qrcode.toFile(qrImagePath, qr, {
+    qrcode.toFile(qrPath, qr, {
         color: {
             dark: '#000000',  // Color del código QR
             light: '#FFFFFF'  // Color de fondo
