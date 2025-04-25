@@ -73,17 +73,18 @@ const client = new Client({
 client.on('qr', (qr) => {
     console.log('Escanea este código QR para iniciar sesión en WhatsApp Web:');
 
-    // Generamos el QR en memoria como imagen PNG
-    qrcode.toBuffer(qr, (err, buffer) => {
+    // Generar QR como un buffer en memoria
+    qrcode.toBuffer(qr, { type: 'png' }, (err, buffer) => {
         if (err) {
             console.error('Error generando el QR:', err);
         } else {
-            console.log('QR generado correctamente.');
-            // Guardamos el buffer de la imagen en una variable que puede ser accesible por HTTP
+            // Servimos el QR a través de la ruta /qr sin necesidad de guardarlo en el sistema de archivos
             app.get('/qr', (req, res) => {
-                res.setHeader('Content-Type', 'image/png');
-                res.send(buffer); // Enviamos el buffer como imagen PNG
+                res.setHeader('Content-Type', 'image/png');  // Establecemos el tipo de contenido adecuado
+                res.send(buffer);  // Enviamos el buffer como una imagen PNG
             });
+
+            console.log('QR generado correctamente, accede a /qr para escanearlo.');
         }
     });
 });
