@@ -4,10 +4,12 @@ const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer-core');
 const qrcode = require('qrcode-terminal');
+const express = require('express');
+
 //const qrcode = require('qrcode');
 //const fs = require('fs');
-const axios = require('axios');
-const FormData = require('form-data');
+const app = express();
+const port = process.env.PORT || 3000;
 //const path = require('path');
 
 // 👇 Usa tu token personal de Browserless aquí
@@ -63,22 +65,32 @@ const client = new Client({
     }
 });
 
+// Generamos el QR como imagen y lo servimos en una URL
 client.on('qr', (qr) => {
     console.log('Escanea este código QR para iniciar sesión en WhatsApp Web:');
-    
-    // Generamos el QR como texto para la consola
-    try {
-        qrcode.generate(qr, {
-            small: true, // Reducir el tamaño para que ocupe menos espacio
-            margin: 1    // Reducir el margen alrededor del QR
-        }, (qrText) => {
-            // Eliminamos saltos de línea para intentar imprimirlo en una sola línea
-            const qrSingleLine = qrText.replace(/\n/g, ''); // Reemplazar saltos de línea por espacio
-            console.log(qrSingleLine);  // Imprimir en una sola línea
-        });
-    } catch (err) {
-        console.error('Error generando el QR:', err);
-    }
+
+    // Ruta de la imagen temporal donde guardaremos el QR
+    const qrImagePath = path.join(__dirname, 'qr-image.png');
+
+    // Generamos el QR como imagen PNG
+    qrcode.toFile(qrImagePath, qr, {
+        color: {
+            dark: '#000000',  // Color del código QR
+            light: '#FFFFFF'  // Color de fondo
+        }
+    }, (err) => {
+        if (err) {
+            console.error('❌ Error generando el QR como imagen:', err);
+            return;
+        }
+        console.log('✅ Código QR generado y guardado como imagen.');
+    });
+});
+
+// Servir el QR generado en una URL accesible
+app.get('/qr', (req, res) => {
+    const qrImagePath = path.join(__dirname, 'qr-image.png');
+    res.sendFile(qrImagePath);
 });
 
 // client.on('qr', qr => {
@@ -112,4 +124,8 @@ client.on('message', msg => {
     });
 });
 
-client.initialize();
+// Iniciar el servidor Express
+app.listen(port, () => {
+    console.log(`🚀 Servidor Express corriendo en http://localhost:${port}`);
+    client.initialize(); // Inicializar cliente de WhatsApp después de iniciar el servidor
+});
