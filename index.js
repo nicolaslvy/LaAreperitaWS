@@ -9,7 +9,7 @@ const express = require('express');
 //const qrcode = require('qrcode');
 //const fs = require('fs');
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8080;
 //const path = require('path');
 
 // 👇 Usa tu token personal de Browserless aquí
@@ -73,24 +73,20 @@ const client = new Client({
 client.on('qr', (qr) => {
     console.log('Escanea este código QR para iniciar sesión en WhatsApp Web:');
 
-    // Ruta de la imagen temporal donde guardaremos el QR
-    const qrImagePath = path.join(__dirname, 'qr-image.png');
-
-    // Generamos el QR como imagen PNG
-    qrcode.toFile(qrPath, qr, {
-        color: {
-            dark: '#000000',  // Color del código QR
-            light: '#FFFFFF'  // Color de fondo
-        }
-    }, (err) => {
+    // Generamos el QR en memoria como imagen PNG
+    qrcode.toBuffer(qr, (err, buffer) => {
         if (err) {
-            console.error('❌ Error generando el QR como imagen:', err);
-            return;
+            console.error('Error generando el QR:', err);
+        } else {
+            console.log('QR generado correctamente.');
+            // Guardamos el buffer de la imagen en una variable que puede ser accesible por HTTP
+            app.get('/qr', (req, res) => {
+                res.setHeader('Content-Type', 'image/png');
+                res.send(buffer); // Enviamos el buffer como imagen PNG
+            });
         }
-        console.log('✅ Código QR generado y guardado como imagen.');
     });
 });
-
 // Servir el QR generado en una URL accesible
 app.get('/qr', (req, res) => {
     const qrImagePath = path.join(__dirname, 'qr-image.png');
