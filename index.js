@@ -89,10 +89,10 @@ client.on('qr', (qr) => {
     });
 });
 // Servir el QR generado en una URL accesible
-app.get('/qr', (req, res) => {
-    const qrImagePath = path.join(__dirname, 'qr-image.png');
-    res.sendFile(qrImagePath);
-});
+// app.get('/qr', (req, res) => {
+//     const qrImagePath = path.join(__dirname, 'qr-image.png');
+//     res.sendFile(qrImagePath);
+// });
 
 // client.on('qr', qr => {
 //     console.log('📲 Escanea este QR con WhatsApp Business:');
