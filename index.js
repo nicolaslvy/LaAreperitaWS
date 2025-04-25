@@ -66,9 +66,16 @@ const client = new Client({
 client.on('qr', (qr) => {
     console.log('Escanea este código QR para iniciar sesión en WhatsApp Web:');
     
-    // Usar qrcode-terminal para mostrar el QR en formato de consola
+    // Generamos el QR como texto para la consola
     try {
-        qrcode.generate(qr, { small: true }); // Mostrar el QR en la consola de manera más amigable
+        qrcode.generate(qr, {
+            small: true, // Reducir el tamaño para que ocupe menos espacio
+            margin: 1    // Reducir el margen alrededor del QR
+        }, (qrText) => {
+            // Eliminamos saltos de línea para intentar imprimirlo en una sola línea
+            const qrSingleLine = qrText.replace(/\n/g, ''); // Reemplazar saltos de línea por espacio
+            console.log(qrSingleLine);  // Imprimir en una sola línea
+        });
     } catch (err) {
         console.error('Error generando el QR:', err);
     }
