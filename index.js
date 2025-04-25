@@ -4,6 +4,11 @@ const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer-core');
 const qrcode = require('qrcode-terminal');
+const QRCode = require('qrcode');
+//const fs = require('fs');
+const axios = require('axios');
+const FormData = require('form-data');
+//const path = require('path');
 
 // 👇 Usa tu token personal de Browserless aquí
 const BROWSERLESS_TOKEN = 'SBu0KSMcQVijvb1e8848f2011f632b76e4c796a89e';
@@ -58,34 +63,34 @@ const client = new Client({
     }
 });
 
-client.on('qr', (qr) => {
-    console.clear();
-    console.log('\n🟢 Escanea este código QR para iniciar sesión en WhatsApp Web:\n');
+client.on('qr', async (qr) => {
+    console.log('🔄 Generando y subiendo código QR...');
 
-    // Verificar que el QR no venga vacío
-    if (!qr || typeof qr !== 'string' || qr.trim() === '') {
-        console.error('❌ El valor de QR recibido está vacío o mal formado.');
-        return;
+    try {
+        const filePath = path.join(__dirname, 'qr.png');
+
+        // Generar imagen del QR
+        await QRCode.toFile(filePath, qr);
+        console.log('✅ Imagen QR generada:', filePath);
+
+        // Crear formulario para subir archivo
+        const form = new FormData();
+        form.append('file', fs.createReadStream(filePath));
+
+        // Subir a 0x0.st
+        const response = await axios.post('https://0x0.st', form, {
+            headers: form.getHeaders()
+        });
+
+        console.log('📎 URL del QR generado:', response.data);
+        console.log('📱 Abre WhatsApp > Dispositivos vinculados > Escanea el código desde esa URL');
+
+        // Eliminar archivo local después de subir
+        fs.unlinkSync(filePath);
+
+    } catch (err) {
+        console.error('❌ Error al generar o subir el QR:', err.message);
     }
-
-    // Generar el código QR
-    QRCode.toString(qr, {
-        type: 'terminal',
-        small: false
-    }, (err, qrString) => {
-        if (err) {
-            console.error('❌ Error generando el código QR:', err.message);
-            return;
-        }
-
-        if (!qrString || qrString.trim() === '') {
-            console.error('❌ El QR generado está vacío.');
-            return;
-        }
-
-        console.log(qrString);
-        console.log('\n📱 Abre WhatsApp > Menú > Dispositivos vinculados > Escanea el código\n');
-    });
 });
 
 // client.on('qr', qr => {
