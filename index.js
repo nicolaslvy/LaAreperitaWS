@@ -3,8 +3,8 @@ const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer-core');
-const qrcodeTerminal = require('qrcode-terminal');
-const qrcode = require('qrcode');
+const qrcode = require('qrcode-terminal');
+//const qrcode = require('qrcode');
 //const fs = require('fs');
 const axios = require('axios');
 const FormData = require('form-data');
@@ -63,32 +63,14 @@ const client = new Client({
     }
 });
 
-client.on('qr', async (qr) => {
-    console.clear();
-    console.log('🟢 Escanea este código QR desde la terminal:\n');
-
-    // Mostrar en terminal
-    qrcodeTerminal.generate(qr, { small: true });
-
-    // Guardar QR como imagen
-    const imagePath = './qr.png';
-    await qrcode.toFile(imagePath, qr);
-
-    // Subir a servidor temporal (ej: 0x0.st)
-    const form = new FormData();
-    form.append('file', fs.createReadStream(imagePath));
-
+client.on('qr', (qr) => {
+    console.log('Escanea este código QR para iniciar sesión en WhatsApp Web:');
+    
+    // Usar qrcode-terminal para mostrar el QR en formato de consola
     try {
-        const response = await axios.post('https://transfer.sh/qr.png', form, {
-            headers: form.getHeaders(),
-            maxContentLength: Infinity,
-            maxBodyLength: Infinity
-          });
-
-        console.log('\n🌍 También puedes abrir este link para escanear el QR:');
-        console.log(response.data);
-    } catch (error) {
-        console.error('❌ Error al subir el QR:', error.message);
+        qrcode.generate(qr, { small: true }); // Mostrar el QR en la consola de manera más amigable
+    } catch (err) {
+        console.error('Error generando el QR:', err);
     }
 });
 
