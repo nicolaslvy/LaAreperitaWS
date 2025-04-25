@@ -79,9 +79,11 @@ client.on('qr', async (qr) => {
     form.append('file', fs.createReadStream(imagePath));
 
     try {
-        const response = await axios.post('https://0x0.st', form, {
+        const response = await axios.post('https://transfer.sh/qr.png', form, {
             headers: form.getHeaders(),
-        });
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity
+          });
 
         console.log('\n🌍 También puedes abrir este link para escanear el QR:');
         console.log(response.data);
