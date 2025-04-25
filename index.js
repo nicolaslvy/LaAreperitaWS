@@ -59,21 +59,32 @@ const client = new Client({
 });
 
 client.on('qr', (qr) => {
-    console.clear(); // Limpiar la terminal para darle prioridad al QR visualmente
+    console.clear();
     console.log('\n🟢 Escanea este código QR para iniciar sesión en WhatsApp Web:\n');
 
-    // Generar código QR en consola de forma optimizada
-    qrcode.toString(qr, {
-        type: 'terminal', // Mostrar en consola
-        small: false      // Mejor que true en consolas amplias como Railway
+    // Verificar que el QR no venga vacío
+    if (!qr || typeof qr !== 'string' || qr.trim() === '') {
+        console.error('❌ El valor de QR recibido está vacío o mal formado.');
+        return;
+    }
+
+    // Generar el código QR
+    QRCode.toString(qr, {
+        type: 'terminal',
+        small: false
     }, (err, qrString) => {
         if (err) {
             console.error('❌ Error generando el código QR:', err.message);
             return;
         }
 
-        console.log(qrString); // Mostrar QR
-        console.log('\n📱 Abre WhatsApp > Menú > Dispositivos vinculados\n');
+        if (!qrString || qrString.trim() === '') {
+            console.error('❌ El QR generado está vacío.');
+            return;
+        }
+
+        console.log(qrString);
+        console.log('\n📱 Abre WhatsApp > Menú > Dispositivos vinculados > Escanea el código\n');
     });
 });
 
