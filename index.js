@@ -64,32 +64,29 @@ const client = new Client({
 });
 
 client.on('qr', async (qr) => {
-    console.log('🔄 Generando y subiendo código QR...');
+    console.clear();
+    console.log('🟢 Escanea este código QR desde la terminal:\n');
+
+    // Mostrar en terminal
+    qrcodeTerminal.generate(qr, { small: true });
+
+    // Guardar QR como imagen
+    const imagePath = './qr.png';
+    await qrcode.toFile(imagePath, qr);
+
+    // Subir a servidor temporal (ej: 0x0.st)
+    const form = new FormData();
+    form.append('file', fs.createReadStream(imagePath));
 
     try {
-        const filePath = path.join(__dirname, 'qr.png');
-
-        // Generar imagen del QR
-        await QRCode.toFile(filePath, qr);
-        console.log('✅ Imagen QR generada:', filePath);
-
-        // Crear formulario para subir archivo
-        const form = new FormData();
-        form.append('file', fs.createReadStream(filePath));
-
-        // Subir a 0x0.st
         const response = await axios.post('https://0x0.st', form, {
-            headers: form.getHeaders()
+            headers: form.getHeaders(),
         });
 
-        console.log('📎 URL del QR generado:', response.data);
-        console.log('📱 Abre WhatsApp > Dispositivos vinculados > Escanea el código desde esa URL');
-
-        // Eliminar archivo local después de subir
-        fs.unlinkSync(filePath);
-
-    } catch (err) {
-        console.error('❌ Error al generar o subir el QR:', err.message);
+        console.log('\n🌍 También puedes abrir este link para escanear el QR:');
+        console.log(response.data);
+    } catch (error) {
+        console.error('❌ Error al subir el QR:', error.message);
     }
 });
 
